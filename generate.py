@@ -36,9 +36,9 @@ CONTENT = {
             ("STATUS", "rows", [("now", "Data Science specialization + MSc IT Mgmt"),
                                  ("goal", "Data analysis / BI role")]),
             ("TOOLS", "pills", [("daily", ["SQL", "Python", "Power BI", "Power Automate", "Git",
-                                           "PostgreSQL", "VBA", "SAP", "Claude Code"])]),
+                                           "PostgreSQL", "VBA", "SAP", "Linux", "Claude Code"])]),
             ("STACK", "pills", [("frontend", ["HTML", "CSS", "JavaScript", "Astro"]),
-                                ("backend", ["Python", "Bash", "VBA", "pytest"]),
+                                ("backend", ["Python", "Bash", "Linux", "VBA", "pytest"]),
                                 ("database", ["PostgreSQL", "SQL", "SQLite"]),
                                 ("cloud", ["Databricks", "Kafka", "Azure Data Lake", "Vercel"]),
                                 ("bi", ["Power BI", "Looker Studio", "Excel", "Power Query"]),
@@ -66,9 +66,9 @@ CONTENT = {
             ("ESTADO", "rows", [("ahora", "Especialización en Data Science + Maestría IT"),
                                  ("meta", "Rol de análisis de datos / BI")]),
             ("HERRAMIENTAS", "pills", [("diarias", ["SQL", "Python", "Power BI", "Power Automate", "Git",
-                                                    "PostgreSQL", "VBA", "SAP", "Claude Code"])]),
+                                                    "PostgreSQL", "VBA", "SAP", "Linux", "Claude Code"])]),
             ("STACK", "pills", [("frontend", ["HTML", "CSS", "JavaScript", "Astro"]),
-                                ("backend", ["Python", "Bash", "VBA", "pytest"]),
+                                ("backend", ["Python", "Bash", "Linux", "VBA", "pytest"]),
                                 ("base de datos", ["PostgreSQL", "SQL", "SQLite"]),
                                 ("nube", ["Databricks", "Kafka", "Azure Data Lake", "Vercel"]),
                                 ("bi", ["Power BI", "Looker Studio", "Excel", "Power Query"]),
@@ -161,7 +161,7 @@ class Card:
         for it in items:
             w = len(it) * 11 * CW + 18
             if cx + w > maxx:
-                cx, y = x, y + 24
+                cx, y = x, y + 30
             out.append(f'<rect x="{cx:.1f}" y="{y - 13}" width="{w:.1f}" height="19" rx="9.5" class="pill"/>'
                        f'<text x="{cx + 9:.1f}" y="{y}" class="fg" font-size="11">{escape(it)}</text>')
             cx += w + 6
@@ -179,7 +179,7 @@ class Card:
 
     def panel(self, x, y, w, h):
         rng = random.Random(7)
-        cx, cy = x + w / 2, y + 160
+        cx, cy = x + w / 2, y + max(160, (h - 110) / 2)
         g = [f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="6" class="frame"/>',
              self.starfield(rng, x + 4, y + 4, w - 8, h - 8, 70, True),
              self.text(x + 14, y + 22, self.c["panel"], "dim", 11)]
@@ -240,20 +240,20 @@ class Card:
         for title, kind, rows in self.c["sections"]:
             self.add(self.text(X0, y, title, "dim bold", 11)
                      + f'<line x1="{X0 + len(title) * 11 * CW + 10:.1f}" y1="{y - 4}" x2="{MAXX}" y2="{y - 4}" class="rule"/>')
-            y += 20
+            y += 28
             for key, val in rows:
                 kend = X0 + (len(key) + 1) * 12 * CW
                 lead = f'<line x1="{kend + 4:.1f}" y1="{y - 3}" x2="{X1 - 8}" y2="{y - 3}" class="leader"/>'
                 if kind == "rows":
                     self.add(self.text(X0, y, key, "dim", 12) + lead + self.text(X1, y, val, "fg", 12))
-                    y += 19
+                    y += 26
                 else:
                     svg, ly = self.pills(val, X1, y, MAXX)
                     self.add(self.text(X0, y, key, "dim", 12) + lead + svg)
-                    y += 19 + (ly - y)
-            y += 12
+                    y += 26 + (ly - y)
+            y += 30
         right_end = y
-        tiles_y = right_end - 12 - 112
+        tiles_y = right_end - 30 - 112
         self.panel(24, 64, 316, tiles_y - 16 - 64)
         left_end = self.tiles(24, tiles_y)
         H = max(left_end, right_end) + 44
