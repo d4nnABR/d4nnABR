@@ -296,26 +296,41 @@ text{{font-family:{FONT}}}
                 f'{bg_stars}{"".join(self.parts)}</svg>')
 
 
-def snake(theme, days):
-    t = THEMES[theme]
-    cell, gap, pad = 11, 3, 14
+SNAKE_TEXT = {
+    "en": ("CONTRIBUTION.MAP", "contributions in the last year",
+           ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]),
+    "es": ("MAPA.CONTRIBUCIONES", "contribuciones en el último año",
+           ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"]),
+}
+
+
+def snake(theme, lang, stats):
+    t, days = THEMES[theme], stats["days"]
+    title, caption, months = SNAKE_TEXT[lang]
+    cell, gap, pad = 11, 3, 18
     step = cell + gap
     cols = max(d["col"] for d in days) + 1
-    W, H = cols * step - gap + pad * 2, 7 * step - gap + pad * 2
+    gx, gy = pad, pad + 52  # room for the header and the month labels
+    W, H = cols * step - gap + pad * 2, gy + 7 * step - gap + pad
     lead = 8  # off-screen steps before and after, so the loop jump is never visible
     path = [(-lead + i, 0) for i in range(lead)]
     for c in range(cols):
         rows = range(7) if c % 2 == 0 else range(6, -1, -1)
         path += [(c, r) for r in rows]
-    last_row = path[-1][1]
-    path += [(cols + i, last_row) for i in range(lead)]
+    path += [(cols + i, path[-1][1]) for i in range(lead)]
     N = len(path)
     secs = N * 0.075
     pos = {p: i for i, p in enumerate(path)}
 
     def xy(c, r):
-        return pad + c * step, pad + r * step
+        return gx + c * step, gy + r * step
 
+    labels, seen = [], None
+    for d in days:
+        if d["date"].day <= 7 and d["date"].month != seen and d["row"] == 0 or (
+                d["date"].day <= 7 and d["date"].month != seen and seen is None):
+            seen = d["date"].month
+            labels.append(f'<text x="{xy(d["col"], 0)[0]}" y="{gy - 10}" class="m">{months[seen - 1]}</text>')
     cells, kf = [], []
     for d in days:
         x, y = xy(d["col"], d["row"])
@@ -330,18 +345,24 @@ def snake(theme, days):
         cells.append(f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" rx="2.5" fill="{t["cells"][lvl]}"{anim}/>')
     stops = "".join(f"{i / (N - 1) * 100:.3f}%{{transform:translate({xy(*p)[0]}px,{xy(*p)[1]}px)}}" for i, p in enumerate(path))
     kf.append(f"@keyframes run{{{stops}}}")
-    # a negative delay shifts each segment back along the same path, one step apart
+    sizes = [13, 11, 10, 9, 8, 7, 6, 5]  # head first, then a tapering body
     segs = []
-    for k in range(7):
-        size = cell + 1 if k == 0 else cell
+    for k, size in enumerate(sizes):
+        off = (cell - size) / 2
         delay = secs - k * (secs / N)
-        segs.append(f'<rect width="{size}" height="{size}" rx="3" fill="{t["snake"]}" opacity="{1 - k * 0.11:.2f}" '
+        segs.append(f'<rect x="{off}" y="{off}" width="{size}" height="{size}" rx="{max(2, size / 3.5):.1f}" fill="{t["snake"]}" '
                     f'style="animation:run {secs:.1f}s linear infinite;animation-delay:-{delay:.3f}s"/>')
     segs.reverse()
+    css = (f'text{{font-family:{FONT};font-size:11px}} .m{{fill:{t["dim"]}}} .h{{fill:{t["dim"]};letter-spacing:.18em}} '
+           f'.n{{fill:{t["fg"]};font-weight:700}} .c{{fill:{t["dim"]}}}')
+    header = (f'<text x="{pad}" y="{pad + 8}" class="h">{escape(title)}</text>'
+              f'<text x="{W - pad}" y="{pad + 8}" text-anchor="end"><tspan class="n">{stats["total"]:,}</tspan>'
+              f'<tspan class="c"> {escape(caption)}</tspan></text>')
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img" '
-            f'aria-label="Contribution calendar with an animated snake">'
-            f'<style>{"".join(kf)}@media (prefers-reduced-motion:reduce){{rect{{animation:none!important}}}}</style>'
-            f'{"".join(cells)}{"".join(segs)}</svg>')
+            f'aria-label="{escape(caption)}: {stats["total"]}. Animated snake over the contribution calendar">'
+            f'<style>{css}{"".join(kf)}@media (prefers-reduced-motion:reduce){{rect{{animation:none!important}}}}</style>'
+            f'<rect x=".5" y=".5" width="{W - 1}" height="{H - 1}" rx="10" fill="none" stroke="{t["line"]}"/>'
+            f'{header}{"".join(labels)}{"".join(cells)}{"".join(segs)}</svg>')
 
 
 def main():
@@ -350,8 +371,9 @@ def main():
         for theme in THEMES:
             svg = Card(theme, content, stats).build(lang)
             (OUT / f"card-{lang}-{theme}.svg").write_text(svg, encoding="utf-8")
-    for theme in THEMES:
-        (OUT / f"snake-{theme}.svg").write_text(snake(theme, stats["days"]), encoding="utf-8")
+    for lang in CONTENT:
+        for theme in THEMES:
+            (OUT / f"snake-{lang}-{theme}.svg").write_text(snake(theme, lang, stats), encoding="utf-8")
     print(f"ok: {stats['total']} contributions, streak {stats['streak']}, "
           f"{stats['repos']} repos, {stats['stars']} stars")
 

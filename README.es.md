@@ -6,8 +6,8 @@
 </picture>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="snake-dark.svg">
-  <img src="snake-light.svg" alt="Calendario de contribuciones con una serpiente animada" width="960">
+  <source media="(prefers-color-scheme: dark)" srcset="snake-es-dark.svg">
+  <img src="snake-es-light.svg" alt="Calendario de contribuciones con una serpiente animada" width="960">
 </picture>
 
 [Web](https://garyabrigo.github.io) | [LinkedIn](https://www.linkedin.com/in/garyabr/) | [Email](mailto:abrigogary@gmail.com) | [English](README.md)
