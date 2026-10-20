@@ -161,7 +161,7 @@ class Card:
         for it in items:
             w = len(it) * 11 * CW + 18
             if cx + w > maxx:
-                cx, y = x, y + 30
+                cx, y = x, y + 36
             out.append(f'<rect x="{cx:.1f}" y="{y - 13}" width="{w:.1f}" height="19" rx="9.5" class="pill"/>'
                        f'<text x="{cx + 9:.1f}" y="{y}" class="fg" font-size="11">{escape(it)}</text>')
             cx += w + 6
@@ -246,11 +246,11 @@ class Card:
                 lead = f'<line x1="{kend + 4:.1f}" y1="{y - 3}" x2="{X1 - 8}" y2="{y - 3}" class="leader"/>'
                 if kind == "rows":
                     self.add(self.text(X0, y, key, "dim", 12) + lead + self.text(X1, y, val, "fg", 12))
-                    y += 26
+                    y += 31
                 else:
                     svg, ly = self.pills(val, X1, y, MAXX)
                     self.add(self.text(X0, y, key, "dim", 12) + lead + svg)
-                    y += 26 + (ly - y)
+                    y += 36 + (ly - y)
             y += 30
         right_end = y
         tiles_y = right_end - 30 - 112
