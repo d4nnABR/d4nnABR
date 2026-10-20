@@ -4,4 +4,5 @@ Description=Refresh GitHub profile card and snake
 [Service]
 Type=oneshot
 WorkingDirectory=%h/Projects/d4nnABR
+Environment=PATH=%h/.local/share/mise/shims:/usr/local/bin:/usr/bin
 ExecStart=%h/Projects/d4nnABR/update.sh

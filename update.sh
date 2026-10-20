@@ -8,5 +8,5 @@ if git diff --cached --quiet; then
   echo "no changes"
 else
   git commit -m "chore: refresh stats and snake"
-  git push
+  git -c credential.helper= -c credential.helper="!$(command -v gh) auth git-credential" push
 fi
